@@ -124,9 +124,86 @@ require_once './api/db_connection.php';
         </div>
     </div>
 
+    <div class="container mt-4">
+        <h3 style="color: white;">Lista de Autos Registrados</h3>
+        <form id="searchForm">
+            <div class="input-group mb-3">
+                <button type="button" id="resetSearch" class="btn btn-secondary">
+                    <i class="bi bi-list-task"></i> Ver Todos
+                </button>
+                <input type="text" id="searchQuery" name="search_query" placeholder="Buscar auto..." class="form-control">
+                <div class="input-group-append">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Buscar
+                    </button>
+                </div>
+            </div>
+        </form>
+        <table class="table table-bordered table-striped">
+            <thead class="thead-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Número de Serie</th>
+                    <th>Marca</th>
+                    <th>Año</th>
+                    <th>Costo</th>
+                    <th>Categoría</th>
+                    <th>Kilometraje</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="carsTableBody">
+                <?php
+                $search_query = $_GET['search_query'] ?? '';
+                $query = "SELECT * FROM cars";
+
+                if (!empty($search_query)) {
+                    $query = "SELECT * FROM cars WHERE serial_num LIKE :search_query 
+                          OR mark LIKE :search_query 
+                          OR category LIKE :search_query";
+                }
+
+                $sql = $cnnPDO->prepare($query);
+
+                if (!empty($search_query)) {
+                    $sql->bindValue(':search_query', "%$search_query%", PDO::PARAM_STR);
+                }
+
+                $sql->execute();
+
+                if ($sql->rowCount() > 0) {
+                    while ($row = $sql->fetch(PDO::FETCH_ASSOC)) {
+                        echo "<tr style='background-color: white; color: black;'>";
+                        echo "<td>{$row['id']}</td>";
+                        echo "<td>{$row['serial_num']}</td>";
+                        echo "<td>{$row['mark']}</td>";
+                        echo "<td>{$row['year']}</td>";
+                        echo "<td>\${$row['cost']}</td>";
+                        echo "<td>{$row['category']}</td>";
+                        echo "<td>{$row['mileage']} km</td>";
+                        echo "<td>
+                        <button class='btn btn-warning' onclick=\"openEditModal(
+                            '{$row['id']}', '{$row['serial_num']}', '{$row['mark']}', '{$row['year']}',
+                            '{$row['cost']}', '{$row['category']}', '{$row['mileage']}')\">
+                            <i class='fas fa-edit'></i> Editar
+                        </button>
+                        <button class='btn btn-danger' onclick=\"deleteCar({$row['id']})\">
+                            <i class='fas fa-trash'></i> Eliminar
+                        </button>
+                    </td>";
+                        echo "</tr>";
+                    }
+                } else {
+                    echo "<tr style='background-color: white; color: black;'><td colspan='8' class='text-center'>No hay registros disponibles</td></tr>";
+                }
+                ?>
+            </tbody>
+        </table>
+    </div>
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script src="./alerts/messageAlerts.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
-
 </html>
