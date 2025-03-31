@@ -139,6 +139,9 @@ require_once './api/db_connection.php';
                 </div>
             </div>
         </form>
+
+//camposdetabla
+
         <table class="table table-bordered table-striped">
             <thead class="thead-dark">
                 <tr>
